@@ -1,6 +1,8 @@
 # CEDNet-Hacks
 A Loose group of utilities designed to make working with my company's proprietary software a little less of a headache.
 
+It's kind of a mess of commented code and is probably a pain to look at, but it works well for my purposes.
+
 Dependencies: [OpenPyxl](https://pypi.python.org/pypi/openpyxl)
 
 Here is an outline of what everything is used for and why I created it in the first place.
