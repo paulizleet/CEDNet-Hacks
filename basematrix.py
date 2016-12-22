@@ -24,10 +24,16 @@ def writeMatrix(fn, productList, margin, margins):
 	i = 0
 	j=0
 	for line in productList:
-		if line[2] == "MILW " or line[2] == "KLEIN" or line[2] == "SOWIR":
+
+			
+			
+		price = formatPrice(line[4], line[2], line[5], margins)	
+		if price == 0:
 			i+=1
 			continue
+			
 		j+=1
+		
 		wline = ""
 
 		wline = ""
@@ -35,7 +41,7 @@ def writeMatrix(fn, productList, margin, margins):
 		wline+=line[1]
 		wline+=line[2]
 		wline+=line[3]
-		wline+=formatPrice(line[4], line[2], line[5], margins)
+		wline+=price
 		wline+=line[5]
 		wline+=line[6]
 		wline+=line[7]
@@ -61,13 +67,20 @@ def formatPrice(price, mfr, uom, margins):
 		return zeroes
 	
 	print(mfr)
-	price = round((float(price) * get_multiplier(uom) ) / get_margin(mfr, margins),2)
+	margin = get_margin(mfr, margins)
+	
+	
+	if margin == 0:
+		return 0
 		
-	price=int(price*100)
+		
+	#price = round((float(price) * get_multiplier(uom) ) / margin,2)
+		
+	#price=int(price*100)
 	
-	price = str(price)
+	#price = str(price)
 	
-	price = zeroes[:-price.__len__()]+price
+	price = zeroes[:-str(str(int(round((float(price) * get_multiplier(uom) ) / margin,2)*100))).__len__()]+str(str(int(round((float(price) * get_multiplier(uom) ) / margin,2)*100)))
 	
 	return price
 
@@ -167,7 +180,13 @@ def get_margin(mfr, margins):
 		#	input(each)
 			return float(each[1])
 	
-	return float(margins[0][1])
+	for each in margins:
+			if each[0] == "DEFAULT":
+		#	input(each)
+				return float(each[1])
+	
+		
+	return .75
 
 def get_multiplier(uom):
 			
@@ -179,23 +198,62 @@ def get_multiplier(uom):
 		return 1000
 
 def readMargins():
-	f = open("C:\PaulScripts\Pricing Matrices\mfr_margins.txt")
+
+	try:
+		f = open("C:\PaulScripts\Pricing Matrices\mfr_margins.txt")
+		
+	except FileNotFoundError:
+		input("There is no file containing margins for things.  I've created a template file at \n "\
+				"C:\PaulScripts\Pricing Matrices\mfr_margins.txt\n"\
+				"It has examples in it to show you how to add your own rules.\n"\
+				"For now I'm using a margin of 75% \nPress enter to continue...")
+		
+		f = open("C:\PaulScripts\Pricing Matrices\mfr_margins.txt",'w')
+		
+		
+		f.write("#Change the #DEFAULT value to be whatever margin you'd like\n")
+		f.write("#And add rules for any products you like\n#\n")
+		f.write("#To exclude products, use a margin of 0\n")
+		
+		f.write("#MFR/CAT\tMargin\n")
+		f.write("DEFAULT\t.75\n")
+		f.write("FAKEM\t.75\n")
+		f.write("FAKEM\t.75\n")
+		f.write("FAKEC\t.9")
+		f.write("SKIPM\t0")
+		
+		f.close
+		return [['DEFAULT', .75]]
 	lns = []
 	
 	for line in f:
+		if line[0] == "#":
+			continue
+		
+		if len(line.split()) != 2:
+			continue
+			
 		lns.append(line.split())
 		
 	return lns
 	
 def run():
 	#read all products in
-	try:
-		productList = readLPF("C:\Invsys\Algorithm\SPKPRDDT.lsq")
-	except FileNotFoundError:
-		print("CEDNet data files not found.  \nPlease run the Data Files export function in CEDNet")
-		print("It can be found at Maintainance > Product > Data Files")
-		return
-		
+	
+	while True:
+		try:
+			productList = readLPF("C:\Invsys\Algorithm\SPKPRDDT.lsq")
+		except FileNotFoundError:
+			print("CEDNet data files not found.  \nPlease run the Data Files export function in CEDNet")
+			print("It can be found at Maintainance > Product > Data Files")
+			choice=input("\nPress enter when ready, or type quit to return to the last screen").strip()
+			
+			if choice.lower() == 'quit':
+				return
+		break
+
+			
+			
 	margins = readMargins()
 	i=0
 
@@ -210,9 +268,11 @@ def run():
 	print(str(productList.__len__()) + " Items in total.")
 	
 if __name__ == "__main__":
+
 	run()
 	
 	print("Base matrix written to \"C:\\PaulScripts\\Pricing Matrices\\Import Base.lsq\"")
 	
 else:
+
 	print("imported basematrix.py")

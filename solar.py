@@ -214,12 +214,7 @@ def do_enphase(customers):
 			continue
 		else:
 			ws.cell(row=mr + i- skip, column=4).value =  each[-1]#qty
-
-
-
-
-
-
+		
 		ws.cell(row=mr + i - skip, column=1).value = "CED Greentech" #Distributor
 		ws.cell(row=mr + i- skip, column=2).value = each[ORDER_DATE] #Date
 		ws.cell(row=mr + i- skip, column=3).value =  each[ORDER_CAT]#Cat #
@@ -238,35 +233,6 @@ def do_enphase(customers):
 
 	enpwb.save(path + "Solar Reporting\Weekly\Enphase POS q4.xlsx")
 
-	'''
-	#
-	#  This section was for noting current stock levels for this vendor.
-	#	We don't have to report this anymore, but I'll leave it commented out just to show what it used to do
-
-	try:
-		stock = ced_stock(path + "Speaks Exports\Solar PDFs\cedenp.txt", "ENP", enp)
-	except FileNotFoundError:
-		print("Enphase stock status file not found.\n\n"+
-				 "In CEDNet, Run a stock status report on Enphase,\n"+
-				 "save it as a PDF, and export it to plain text.")
-
-
-	enpstock = load_workbook(path + "Solar Reporting\Weekly\Enphase Inventory.xlsx")
-	ws = enpstock.get_sheet_by_name("Inv_Data")
-
-	mr = ws.max_row+1
-	for i, each in enumerate(stock):
-		ws.cell(row=mr+i, column = 1).value = "CED Greentech"
-		ws.cell(row=mr+i, column = 2).value = date.today()
-		ws.cell(row=mr+i, column = 3).value = each[0]
-		if int(each[1]) < 0:
-			ws.cell(row=mr+i, column = 4).value = "0"
-		else:
-			ws.cell(row=mr+i, column = 4).value = each[1]
-		ws.cell(row=mr+i, column = 6).value = each[2]
-
-	enpstock.save(path + "Solar Reporting\Weekly\Enphase Inventory.xlsx")
-	'''
 def do_sma(customers):
 
 	pos = run_speaks(customers, path+"Speaks Exports\spksmonth.txt", "SMA", sma)
@@ -512,6 +478,7 @@ def ced_stock(fp, mfr, prod):
 				final.append(ddd)
 
 	return final
+
 def do_solaredge(customers):
 
 	pos = run_speaks(customers, path + "Speaks Exports\solaredge.txt", "SE", se)

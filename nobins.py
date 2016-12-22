@@ -3,38 +3,36 @@
 '''
 	This script reads the CEDNet data files and turns out an excel spreadsheet with all products
 	that don't have a bin location in the system.  It also gives you a sheet with all
-	of the products in order
-	for you to help punch them in using ShelfAddresses.py
+	of the products in order for you to help punch them in using ShelfAddresses.py
 
 '''
 from openpyxl import Workbook
-#from openpyxl import load_workbook
+
 from openpyxl.styles import Side, Border
 import CEDNetUtils as CED
-#from openpyxl.formatting import Rule
-#from openpyxl.worksheet import dimensions
 
 CELL_FORMULA = "=IF(AND(G{s}<>\"\", H{s}<>\"\"), UPPER(CONCATENATE(G{s}, \".\"" \
 					",H{s}, IF(I{s}<>\"\", CONCATENATE(\".\", I{s}),\"\"))),\"\")"
-def run():
+def run(skip_prompt=False):
 
-	""" Run the script.	 Needs a method and the name block depending on how it gets ran"""
+	#The only time it will be skipped is on setup.  
+	if not skip_prompt:
+		while True:
+			print("This will overwrite the current stock status workbook\nDo you wish to continue? Y/n")
+			choice = input("??")
+			if choice.lower() == "y":
+				break
+			if choice.lower() == "n":
+				return
+			print("Invalid choice.")
 
-	while True:
-		print("This will overwrite the current stock status workbook\nDo you wish to continue? Y/n")
-		choice = input("??")
-		if choice.lower() == "y":
-			break
-		if choice.lower() == "n":
-			return
-		print("Invalid choice.")
-
+			
 	product_list = CED.get_products()
 
-
-
-
+	
+	#Create and size the workbook
 	workbook = Workbook()
+	
 	worksheet = workbook.get_sheet_by_name("Sheet")
 	worksheet.column_dimensions['A'].width = 8
 	worksheet.column_dimensions['B'].width = 24
@@ -42,23 +40,39 @@ def run():
 	worksheet.column_dimensions['D'].width = 10
 	worksheet.column_dimensions['E'].width = 10
 	side = Side(border_style='thin', color="00000000")
+	
 	border = Border(left=side,right=side,bottom=side, top=side)
 
 
 	header = ["MFR", "CAT #", "DESCRIPTION", "OH Qty.", "Current Bin", "New Bin"]
+	
+	#write the excel sheet with all products
 	worksheet = CED.write_excel_sheet(header = header, list = product_list, sheet = worksheet, border = border)
 
 	nobinsheet = workbook.create_sheet('nobins', 1)
-  #	 dim = dimensions.ColumnDimension(nbs, bestFit=True)
 
-	dontcount = ['CR', 'PECO', 'ZZ588', 'PV6-2KV', 'C588', 'WIRE', 'COND',
-				 'CORD', 'DYSON', 'FLEX', 'LIQ', 'HYU', 'LG', 'FRO', 'POWON',
-				 'OMNI', 'SWLD', "310168C", "310168D", "310760", "320123M", "320168M",
-				 "51-7556-056H", "XR-10-132A", "XR-10-168A", "XR-10-204A",
-				 "XR-100-132B", "XR-100-168A", "XR-100-168B", "XR-100-204B",
-				 "XR-1000-168B", "G134OS1", "G582OS1", "PHONO", "JINKO-JKM260P-60",
-				 "NLHBLEV20013", "QCELL", "C3410", "A1200HS10PG", "TESLA", "004300C", "CANS"]
-
+	
+	#Read in a file with Manufacturers and Cat#'s that shouldn't be considered for bin locations.
+	#Or create it if there isn't one
+	dontcount = []
+	try:
+		f = open("C:\\PaulScripts\\Shelving Addresses\\na_bins.txt", 'r')
+		for line in f:
+			dontcount.append(line.strip())
+			
+	except FileNotFoundError:
+		f=open("C:\\PaulScripts\\Shelving Addresses\\na_bins.txt", 'w')
+		print("There is no file with things to exclude. \nI just made one at C:\\PaulScripts\\Shelving Addresses\\na_bins.txt")
+		f.close
+	
+	if dontcount == []:
+		print("You can add manufacturers and product numbers that shouldn't be assigned bin location\nto the file at C:\\PaulScripts\\Shelving Addresses\\na_bins.txt")
+	else:	
+		print("\n\n\n\n I will not include these\n__________________________")
+		for each in dontcount:
+			print(each)
+		
+		
 	nobins = []
 	for j, each in enumerate(product_list):
 
@@ -80,14 +94,21 @@ def run():
 	nobinsheet.column_dimensions['C'].width = 40
 	nobinsheet.column_dimensions['D'].width = 10
 	nobinsheet.column_dimensions['E'].width = 10
-	workbook.save("C:\\PaulScripts\\This Week's Stock Status.xlsx")
+	
+	
+	while True:
+		try:
+			workbook.save("C:\\PaulScripts\\This Week's Stock Status.xlsx")
+			break
+		except:
+			input("Please close the stock status excel document.  Press enter to continue")
 
 
-	print("Spreadsheet saved to C:\\PaulScripts\\This Week's Stock Status.xlsx")
+	print("\n\nSpreadsheet saved to C:\\PaulScripts\\This Week's Stock Status.xlsx")
 	
 	print("\nThere are " + str(len(nobins)) + " items without bin locations.")
 
 if __name__ == "__main__":
-	run()
+	run(skip_prompt=True)
 else:
 	print("imported nobins.py")

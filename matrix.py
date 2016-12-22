@@ -1,7 +1,12 @@
-#PricingMatrix.py
-#Reads in a given pricing matrix, and alters the prices based on current vendor pricing
-
 '''
+
+
+	PricingMatrix.py
+	
+	
+	Reads in a given pricing matrix, and alters the prices based on current vendor pricing
+
+
 	Surprisingly, CEDNet has a method of importing and exporting customer pricing matrices.
 	However, it doesn't have a way of linking customer pricing with vendor cut sheets.
 
@@ -182,8 +187,25 @@ def updatePrices(pl, SHEET = None, VENDOR = None, MARGIN = None):
 			if prc == -1:
 				each[2] = 0.0
 			else:
-
-				each[2] = round(prc / MARGIN, 2)
+				try:
+					each[2] = round(prc / MARGIN, 2)
+				except TypeError:
+					print("There was an error trying to update this price.  \n"\
+					"Probably because the reference book entry pointed to an empty cell.\n\n"\
+					"Double check that the new sheets you were given follow the same format,\n"\
+					"and make sure that all of the references point to the right place.")
+					
+					print("I'm skipping this entry for now, the price will remain the same. \n"\
+					"I'm also adding this to a log of errors for you to look at afterwards.")
+					
+					f=open("C:\PaulScripts\Wire Matrix\wire_matrix_error_log.txt", 'a')
+					errorline = "Reference Book \t"
+					errorline += each[1]
+					errorline += "\t Coordinate error\n"
+					f.write(errorline)
+					f.close()
+					
+					continue
 
 			#	print(each[2])
 			#	if MARGIN == TOP_CUSTOMER:
@@ -209,13 +231,14 @@ def getPrice(product, rb, vb, i):
 		if product.strip() == getCellValueString(rb,r=i,c=1).strip():
 			#print("OK")
 			c = getCoordinates(i, rb)
-			#print(str(c) + "\n")
+
 
 			if c[0] == "DNU":
 				return -1.0
-
-			#print(type(getVendorCost(c, vb)))
-			#print(getVendorCost(c, vb))
+			print(c)
+			print(getCellValueString(rb, "A{0}".format(i) )+ " " + str(c) + " " + str(getVendorCost(c, vb)) + "\n")
+		#	print(type(getVendorCost(c, vb)))
+		#	print(getVendorCost(c, vb))
 			return getVendorCost(c, vb)
 
 
@@ -228,7 +251,7 @@ def getCoordinates(i, rb):
 def getVendorCost(c, vb):
 	#print(type(vb.get_sheet_by_name(c[0]).cell(c[1]).value).__name__)
 	#print(vb.get_sheet_names())
-	print(c)
+
 
 	if c[0] == "CU":
 		return vb[0].cell(c[1]).value
@@ -246,6 +269,7 @@ def getVendorCost(c, vb):
 		return vb[4].cell(c[1]).value
 
 	if c[0] == "MC":
+		print(vb[5].cell(c[1]).value)
 		return vb[5].cell(c[1]).value
 
 	return vb.get_sheet_by_name(c[0]).cell(c[1]).value

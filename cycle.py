@@ -19,6 +19,7 @@ from openpyxl import Workbook
 from openpyxl import load_workbook
 from openpyxl.worksheet import dimensions
 from openpyxl.styles import Side, Border
+
 import CEDNetUtils as CED
 
 from datetime import datetime
@@ -39,12 +40,15 @@ def do_product_book(wb):
 	'''
 
 	try:
+	
 		f = open("C:\\Invsys\\Algorithm\\SPKPRDDT.lsq")
 
 	except FileNotFoundError:
+	
 		print("CEDNet data files not found.  \nPlease run the Data Files export function in CEDNet")
 		print("It can be found at Maintainance > Product > Data Files")
 		return
+		
 	prd = CED.get_products()
 
 
@@ -61,9 +65,9 @@ def do_product_book(wb):
 		#Since any new products are just appended to the end of the list, it's not in alphabetical order,
 		#it needs to check to the very end of the list to be sure if its there or not
 		#I'll probably make the workbook sort itself sometime soon.
+		
 		for j in range(1, ws.max_row+1):
-		#	print(ws.max_row)
-		#	input()
+
 			comp = []
 			try:
 				comp = [ws.cell(row=j, column = 1).value.strip(), str(ws.cell(row=j, column=2).value).strip()]
@@ -73,8 +77,7 @@ def do_product_book(wb):
 			if comp == []:
 				break
 
-		#	print([p[0].strip(), p[1].strip()])
-		#	input(comp)
+
 			if  comp == [p[0].strip(), p[1].strip()]:
 
 				found = True
@@ -96,8 +99,8 @@ def do_product_book(wb):
 			p2.append(p[2])
 			p2.append(p[3])
 			p2.append(p[4])
-			#print(i)
-			#print("Appending {a} {b}".format(a=p[0], b=p[1]))
+
+			
 			ws.append(p2)
 
 	print(ws.max_row)
@@ -112,9 +115,6 @@ def get_items_to_check(ws):
 
 	#get the list of row indeces that haven't been checked.
 	pool = get_pool(ws)
-
-	#input(len(pool))
-
 
 	#get at least 25 random numbers.
 	zeroes = 0

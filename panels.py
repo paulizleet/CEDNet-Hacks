@@ -6,7 +6,7 @@ from openpyxl.worksheet import dimensions
 import datetime
 import CEDNetUtils as CED
 
-mfrs = ["LG", "HYU", "SWLD"]
+mfrs = ["LG", "HYU", "SWLD", "QCELL", "JINKO"]
 def main():
 	
 	lns = get_lines()
@@ -16,14 +16,13 @@ def main():
 	
 def get_lines():
 
-	f = open("C:\\Invsys\\Algorithm\\SPKPRDDT.LSQ")
+	prds = CED.get_products()
 
 	pgs = []
 
-	for line in f:
-		ln = line.split("|")
-		if ln[1].strip() in mfrs:
-			pgs.append(ln)
+	for each in prds:
+		if each[0] in mfrs:
+			pgs.append(each)
 	
 	return pgs
 					
@@ -39,13 +38,8 @@ def write_book(lns):
 	ws.append(["MFR", "CAT #", "DESC", "OH QTY", "AVAIL."])
 	
 	for each in lns:
-		ws.append([
-			each[1].strip(), 
-			each[2].strip(),
-			each[5].strip(), 
-			each[15].strip(),
-			each[31].strip()
-			])		
+		ws.append(each)
+		
 	ws.cell("F1").value = "Updated:"
 	ws.cell("G1").value = datetime.date.today()
 	wb.save("C:\\Users\\pgallagherjr\\Dropbox\\Panel Stock\panels.xlsx")

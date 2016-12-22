@@ -151,8 +151,8 @@ def type_bin_locations():
         saveStockStatus(mfrend, wb, ws, items)
         # ########
 
-    ws.cell("m1").value = ""
-    wb.save("C:\\PaulScripts\\This Week's Stock Status.xlsx")
+	#Save the workbook to start at row 0 next time, because we finished the whole thing.
+    saveStockStatus(0, wb, ws, 0)
 
 def saveStockStatus(i, wb, ws, items):
 
@@ -163,10 +163,16 @@ def saveStockStatus(i, wb, ws, items):
 
     #Set cell value to checkpoint where we've gotten to so far.
     ws.cell("m1").value = i
+	while True:
+		try:
+			print("SAVING - DONT QUIT YET")
+			wb.save("C:\\PaulScripts\\This Week's Stock Status.xlsx")
+			print("DONE SAVING")
+			
+			break
+		except:
+			input("Please close the stock status excel document.  Press enter to continue")
 
-    print("SAVING - DONT QUIT YET")
-    wb.save("C:\\PaulScripts\\This Week's Stock Status.xlsx")
-    print("DONE SAVING")
 
     time.sleep(items * .075)   #during normal operations it takes CEDNet around .05 seconds per entry to save a matrix.
                                         #Wait a little bit longer just in case.
