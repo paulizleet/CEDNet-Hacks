@@ -8,6 +8,9 @@ from openpyxl.worksheet import dimensions
 from openpyxl.styles import Side, Border
 from subprocess import check_output
 from subprocess import CalledProcessError
+
+from os import system
+
 from datetime import datetime
 import math
 import random
@@ -74,7 +77,7 @@ def get_customers():
 			except ValueError:
 				continue
 				
-		print(customer_numbers)
+
 			
 
 		customers = []
@@ -97,10 +100,10 @@ def get_customers():
 		correct = False
 
 		print("0. Account Num: "        +   customers[34][0])
-		print("1. Customer Name: "  +   customers[34][1])
+		print("1. Customer Name: " 		+   customers[34][1])
 		print("2. Customer Addr:"       +   customers[34][2])
 		print("3. Customer City:"       +   customers[34][5])
-		print("4. Customer State: " +   customers[34][4])
+		print("4. Customer State: " 	+   customers[34][4])
 		print("5. Customer Zip: "       +   customers[34][3])
 
 		correct = input("Is this correct?  y/n")
@@ -126,7 +129,7 @@ def get_customers():
 			csline= []
 			for i in range(0, 150):
 				csline=f.readline()
-			
+
 			
 			for i, each in enumerate(csline.split("|")):
 				lines.append(str(i) +"\t\t"+str(each).strip()+"\n")
@@ -146,6 +149,8 @@ def get_customers():
 			except CalledProcessError:
 				print("Error opening notepad.")
 				
+			system('cls')
+				
 			
 			continue
 
@@ -153,6 +158,8 @@ def get_customers():
 			return customers
 		else:
 			print("invalid choice")
+			
+			
 def get_ced_file(filename):
 	while True:
 		try:    
@@ -164,7 +171,6 @@ def get_ced_file(filename):
 			print("It can be found at Maintainance > Product > Data Files")
 			input("Press enter when ready...")
 			continue
-
 	
 def write_excel_sheet(header = None, list = None, sheet=None, border=None):
 	

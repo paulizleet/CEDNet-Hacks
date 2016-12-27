@@ -52,6 +52,12 @@ from openpyxl import load_workbook
 import CEDNetUtils as CED
 from datetime import datetime
 from datetime import date
+
+from subprocess import check_output
+from subprocess import CalledProcessError
+
+from os import system
+
 from time import strftime
 
 path = "C:\\PaulScripts\\"
@@ -130,21 +136,17 @@ se = ["P300-2N-M4A-RS",
 CUST_ACCT = 0
 CUST_NAME = 1
 CUST_ADDR = 2
-CUST_CITY = 4
-CUST_STATE = 5
 CUST_ZIP = 3
-
-ORDER_DATE = -3
-ORDER_CAT = 2
-ORDER_QTY = -1
-ORDER_INVOICE = 4
+CUST_CITY = 5
+CUST_STATE = 4
 
 
-
-def do_ironridge(customers):
+def do_ironridge(customers, product_numbers):
 
 	pos = run_speaks(customers, path + "Speaks Exports\spksweek.txt", "IRIDG", iridg)
 	print(pos[0])
+	
+	
 
 
 	iridgwb = load_workbook(path + "Solar Reporting\Weekly\Ironridge POS q4 sales.xlsx")
@@ -167,15 +169,23 @@ def do_ironridge(customers):
 		else:
 			ws = railsheet
 			mr = ws.max_row+ 1
-
+		
+		'''		
+		print(customers[-1])
+			
+		for i, each2 in enumerate(cust):
+			print(str(i) + " " + each2)
+		for i, each2 in enumerate(each):
+			print(str(i) + " " + each2)
+		input("...")'''
 
 
 		#print(cust)
 		#print(each)
 		ws.cell(row=mr, column=1).value = "CED Greentech" #Distributor
-		ws.cell(row=mr, column=2).value = each[ORDER_DATE]		#Date
-		ws.cell(row=mr, column=3).value = each[ORDER_CAT]		#Cat #
-		ws.cell(row=mr, column=4).value = each[ORDER_QTY]		#qty
+		ws.cell(row=mr, column=2).value = each[product_numbers[0]]		#Date
+		ws.cell(row=mr, column=3).value = each[product_numbers[1]]		#Cat #
+		ws.cell(row=mr, column=4).value = each[product_numbers[2]]		#qty
 		ws.cell(row=mr, column=5).value = cust[CUST_STATE]		#state
 		ws.cell(row=mr, column=6).value = cust[CUST_ZIP]		#zip
 		ws.cell(row=mr, column=7).value = "USA"			#country
@@ -185,7 +195,7 @@ def do_ironridge(customers):
 	#iridgwb.save(path + "Speaks Exports\Ironridge POS {i}.xlsx".format(i=strftime("%B %d %Y")))
 	iridgwb.save(path + "Solar Reporting\Weekly\Ironridge POS q4 sales.xlsx")
 	
-def do_enphase(customers):
+def do_enphase(customers, product_numbers):
 
 	pos = run_speaks(customers, path + "Speaks Exports\spksweek.txt", "ENP", enp)
 
@@ -209,21 +219,21 @@ def do_enphase(customers):
 		#input("...")
 		#quit()
 
-		if int(each[-1]) <= 0:
+		if int(each[product_numbers[2]]) <= 0:
 			skip += 1
 			continue
 		else:
-			ws.cell(row=mr + i- skip, column=4).value =  each[-1]#qty
+			ws.cell(row=mr + i- skip, column=4).value =  each[product_numbers[2]]#qty
 		
 		ws.cell(row=mr + i - skip, column=1).value = "CED Greentech" #Distributor
-		ws.cell(row=mr + i- skip, column=2).value = each[ORDER_DATE] #Date
-		ws.cell(row=mr + i- skip, column=3).value =  each[ORDER_CAT]#Cat #
+		ws.cell(row=mr + i- skip, column=2).value = each[product_numbers[0]] #Date
+		ws.cell(row=mr + i- skip, column=3).value =  each[product_numbers[1]]#Cat #
 
 
 		ws.cell(row=mr + i- skip, column=5).value =  cust[CUST_STATE]#State
 		ws.cell(row=mr + i- skip, column=6).value =  cust[CUST_ZIP]#Zip
 		ws.cell(row=mr + i- skip, column=7).value =  "USA"#Country
-		ws.cell(row=mr + i- skip, column=8).value =  each[ORDER_INVOICE]#Invoice No
+		ws.cell(row=mr + i- skip, column=8).value =  each[product_numbers[3]]#Invoice No
 		ws.cell(row=mr + i- skip, column=9).value =  "1"#Line #
 		ws.cell(row=mr + i- skip, column=11).value =  cust[CUST_NAME]#Name
 		ws.cell(row=mr + i- skip, column=12).value =  cust[CUST_ADDR]#Addr
@@ -233,7 +243,7 @@ def do_enphase(customers):
 
 	enpwb.save(path + "Solar Reporting\Weekly\Enphase POS q4.xlsx")
 
-def do_sma(customers):
+def do_sma(customers, product_numbers):
 
 	pos = run_speaks(customers, path+"Speaks Exports\spksmonth.txt", "SMA", sma)
 
@@ -256,12 +266,12 @@ def do_sma(customers):
 		print(each)
 		print(cust)
 
-		ws.cell(row=mr + i, column=1).value =	each[ORDER_DATE] #Date
+		ws.cell(row=mr + i, column=1).value =	each[product_numbers[0]] #Date
 		ws.cell(row=mr + i, column=4).value =	cust[CUST_NAME] #Customer
-		ws.cell(row=mr + i, column=5).value =	each[ORDER_INVOICE] #Invoice Num
+		ws.cell(row=mr + i, column=5).value =	each[product_numbers[3]] #Invoice Num
 		ws.cell(row=mr + i, column=6).value =	cust[CUST_ADDR] #Customer Address
-		ws.cell(row=mr + i, column=7).value =	each[ORDER_CAT] #Cat #
-		ws.cell(row=mr + i, column=8).value =	each[ORDER_QTY] #Quantity
+		ws.cell(row=mr + i, column=7).value =	each[product_numbers[1]] #Cat #
+		ws.cell(row=mr + i, column=8).value =	each[product_numbers[2]] #Quantity
 
 
 		#print(ws.row(mr+i))
@@ -338,12 +348,12 @@ def do_lg(customers):
 				break
 		
 		print(cust)
-		ws.cell(row=mr + i + extraspaces, column=1).value =	each[ORDER_DATE]
-		ws.cell(row=mr + i + extraspaces, column=2).value =	each[ORDER_CAT]
-		ws.cell(row=mr + i + extraspaces, column=3).value =	each[ORDER_QTY]
+		ws.cell(row=mr + i + extraspaces, column=1).value =	each[product_numbers[0]]
+		ws.cell(row=mr + i + extraspaces, column=2).value =	each[product_numbers[1]]
+		ws.cell(row=mr + i + extraspaces, column=3).value =	each[product_numbers[2]]
 		ws.cell(row=mr + i + extraspaces, column=4).value =	cust[CUST_STATE]
 		ws.cell(row=mr + i + extraspaces, column=5).value =	cust[CUST_ZIP]
-		ws.cell(row=mr + i + extraspaces, column=6).value =	each[ORDER_INVOICE]
+		ws.cell(row=mr + i + extraspaces, column=6).value =	each[product_numbers[3]]
 		ws.cell(row=mr + i + extraspaces, column=7).value =	cust[CUST_CITY]
 
 		totalqty += int(each[7])
@@ -390,7 +400,7 @@ def run_speaks(customers, fp, mfr, prod):
 	asdf = []
 	cs = ""
 	for each in splits:
-		print(each)
+		#print(each)
 		#input(each)
 		for i in range(0, len(customers)):
 			if each[0] == customers[i][0]:
@@ -513,15 +523,110 @@ def do_solaredge(customers):
 		#Customer
 		ws.cell(row=mr + i + fewerspaces, column= 1).value = cust[CUST_NAME] #Customer Name
 		ws.cell(row=mr + i+ fewerspaces, column=2).value = cust[CUST_ADDR] #address
-		ws.cell(row=mr + i+ fewerspaces, column=3).value = each[ORDER_DATE] #date
-		ws.cell(row=mr + i+ fewerspaces, column=4).value = each[ORDER_CAT] #cat num
-		ws.cell(row=mr + i+ fewerspaces, column=5).value = each[ORDER_QTY] #Qty
+		ws.cell(row=mr + i+ fewerspaces, column=3).value = each[product_numbers[0]] #date
+		ws.cell(row=mr + i+ fewerspaces, column=4).value = each[product_numbers[1]]#cat num
+		ws.cell(row=mr + i+ fewerspaces, column=5).value = each[product_numbers[2]]#Qty
 
 
 
 
 	#iridgwb.save(path + "Speaks Exports\Ironridge POS {i}.xlsx".format(i=strftime("%B %d %Y")))
 	sewb.save(path + "Solar Reporting\Quarterly\SolarEdge POS.xlsx")
+	
+def get_proper_speaks_numbers(customers):
+	while True:
+	
+	##get_file	
+	
+		product_numbers = []
+		f=open("C:\\PaulScripts\\configs\\solar_product_info.txt", 'r')
+		
+		while len(product_numbers) < 4:
+			
+			
+			line = f.readline()
+
+			try:
+				product_numbers.append(int(line[:2].strip()))
+			except ValueError:
+				print("nop")
+				continue
+				
+		pos = run_speaks(customers, path + "Speaks Exports\spksweek.txt", "IRIDG", iridg)
+		
+		
+		biggest = []
+		
+		for each in pos:
+			if len(each) > len(biggest):
+				biggest = each
+		
+				
+		
+		print("0. Date:\t" + 		biggest[product_numbers[0]])
+		print("1. Cat #:\t" + 		biggest[product_numbers[1]])
+		print("2. Quantity:\t" +	biggest[product_numbers[2]])
+		print("3. Invoice #\t" +	biggest[product_numbers[3]])
+		
+		correct = input("Is this correct?  y/n")
+ 
+		system('cls')
+		
+		if correct.lower() == "n":
+
+			lines = []
+			lines.append( str(product_numbers[0] ) + "\t\tOrder Date\n")
+			lines.append( str(product_numbers[1] ) + "\t\tCat Number\n")
+			lines.append( str(product_numbers[2] ) + "\t\tOrder Quantity\n")
+			lines.append( str(product_numbers[3] ) + "\t\tInvoice Number\n")
+
+			lines.append("Above are the values that the script reads, and below is an entry from CEDNet's customer file.\n")
+			lines.append("Find the number which is wrong on the top list, and replace it with the correct number from the bottom list.\n")
+			lines.append("\nSome numbers are supposed to be negative.  It's how I can make Python play nicely with speaks.\n\n")
+			lines.append("Do not change the order of the values!\n\n")
+
+			biggest = []
+			
+			for each in pos:
+				if len(each) > len(biggest):
+					biggest = each
+			
+			
+			for i, each in enumerate(biggest):
+				if i < 5:
+					
+					lines.append(str(i) +"\t\t"+str(each).strip()+"\n")
+				
+				else:
+					lines.append(str(i - len(biggest)) +"\t\t"+str(each).strip()+"\n")
+
+				
+			f=open("C:\\PaulScripts\\configs\\solar_product_info.txt", 'w')
+			
+			for each in lines:
+				f.write(each)
+			
+			f.close()
+			
+			print("I wrote a file file for you to edit to tell me what the values are.  \n"\
+					"I will open it in notepad for you.  The script will continue when you close notepad.")
+			
+			try:
+				check_output(["notepad.exe", "C:\\PaulScripts\\configs\\solar_product_info.txt"]).decode("ascii")
+				
+			except CalledProcessError:
+				print("Error opening notepad.")
+				
+			system('cls')
+			
+			continue
+
+		elif correct.lower() == 'y':
+			return product_numbers
+		else:
+			print("invalid choice")
+			
+			
 
 
 def run():
@@ -532,14 +637,16 @@ def run():
 	#	return
 	customers = CED.get_customers()
 	#print(customers[1])
-
+	product_numbers = get_proper_speaks_numbers(customers)
+	
+	
 
 
 	while True:
 		opt = input("Weekly? Y/N").upper()
 		if opt == "Y":
-			do_ironridge(customers)
-			do_enphase(customers)
+			do_ironridge(customers,product_numbers)
+			do_enphase(customers,product_numbers)
 			break
 		elif opt == "N":
 			break
@@ -549,8 +656,8 @@ def run():
 	while True:
 		opt = input("Monthly? Y/N").upper()
 		if opt == "Y":
-			do_sma(customers)
-			do_lg(customers)
+			do_sma(customers,product_numbers)
+			do_lg(customers,product_numbers)
 			break
 		elif opt == "N":
 			break
@@ -558,10 +665,12 @@ def run():
 	while True:
 		opt = input("Quarterly? Y/N").upper()
 		if opt == "Y":
-			do_solaredge(customers)
+			do_solaredge(customers,product_numbers)
 			break
 		elif opt == "N":
 			break
+			
+			
 if __name__ == "__main__":
 	run()
 else:
